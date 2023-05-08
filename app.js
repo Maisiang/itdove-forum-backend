@@ -17,26 +17,32 @@ app.use(express.urlencoded({ extended: false }));
 const httpServer = require('./lib/httpServer');
 httpServer.createHttpServer(app);
 
+// MySQL連線
+const mysql = require('./lib/mysql');
+
 // 設置允許跨域請求
-console.log('CORS: ',process.env.ORIGIN)
+//console.log('CORS: ',process.env.ORIGIN)
 app.use(cors({
-	origin: process.env.ORIGIN,
+	origin: '*',
 	credentials: true
 }));
 
 // 設置路由
-/*const publicRouter = require('../routes/public');
+const publicRouter = require('./routes/public');
 app.use('/public', publicRouter);
-const userRouter = require('../routes/user');
+/*const userRouter = require('../routes/user');
 app.use('/user', userRouter);
 const adminRouter = require('../routes/admin');
 app.use('/admin', userRouter);*/
 
+// 忽略 favicon.ico 的請求 
+app.get('/favicon.ico', (req, res) => res.status(204));
 
 // 轉送404錯誤到 Error Handler
 app.use(function(req, res, next) {
 	next(createError(404));
 });
+
 // Error Handler
 app.use(function(err, req, res, next) {
 	console.log(err.status||500);
