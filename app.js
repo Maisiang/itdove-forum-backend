@@ -13,13 +13,6 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// 建立 HTTP Server
-const httpServer = require('./lib/httpServer');
-httpServer.createHttpServer(app);
-
-// MySQL連線
-const mysql = require('./lib/mysql');
-
 // 設置允許跨域請求
 //console.log('CORS: ',process.env.ORIGIN)
 app.use(cors({
@@ -34,6 +27,18 @@ app.use('/public', publicRouter);
 app.use('/user', userRouter);
 const adminRouter = require('../routes/admin');
 app.use('/admin', userRouter);*/
+
+async function startApp() {
+	// SQL連接
+	const postgreSQL = require('./lib/postgreSQL');
+	await postgreSQL.startSQL();
+
+	// 建立 HTTP Server
+	const httpServer = require('./lib/httpServer');
+	httpServer.createHttpServer(app);
+};
+startApp();
+
 
 // 忽略 favicon.ico 的請求 
 app.get('/favicon.ico', (req, res) => res.status(204));
@@ -58,4 +63,9 @@ process.on('unhandledRejection', function(err) {
 	console.log('非同步： ',err);
 	process.exit(1)
 })
+
+
+
+
+
   

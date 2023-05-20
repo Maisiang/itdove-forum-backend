@@ -1,29 +1,26 @@
-const mysql = require('../lib/mysql');
+const postgreSQL = require('../lib/postgreSQL');
 
 // 取得看板
-exports.getKanban = (request,response) => {
-    const sql = 'SELECT * FROM KANBAN';
-    mysql.connection.query(sql, (error, results) => {
-        /*if (error) {return Error(error, response);}*/
-        response.json(results);
-    });
+exports.getKanban = async (request,response) => {
+    const sql = 'SELECT * FROM "KANBAN"';
+    const result = await postgreSQL.client.query(sql);
+    response.json(result.rows);
 }
 // 取得文章
-exports.getArticle = (request,response) => {
-    console.log(request.query.page);
+exports.getArticle = async (request,response) => {
     let params = [];
-    let sql = "SELECT ARTICLE.* \
-                FROM  ARTICLE, KANBAN \
-                WHERE ARTICLE.KANBAN_ID = KANBAN.KANBAN_ID ";
+    let sql = 'SELECT "ARTICLE".* \
+                FROM  "ARTICLE", "KANBAN" \
+                WHERE "ARTICLE".KANBAN_ID = "KANBAN".KANBAN_ID ';
+    // 非所有看板，則篩選文章
+    params.push(request.query.page * 10);
     if(request.params.kanbanID != "all"){
-        sql += "AND KANBAN.NAME_EN = ? ";
+        sql += 'AND "KANBAN".NAME_EN = $2 ';
         params.push(request.params.kanbanID);
     }
-    sql += "LIMIT " + request.query.page * 10 + ", 10";
-    mysql.connection.query(sql, params, (error, results) => {
-        console.log('結果：',results);
-        response.json(results);
-    });
+    sql += 'LIMIT 10 OFFSET $1'
+    const result = await postgreSQL.client.query(sql, params);
+    response.json(result.rows);
 }
 
 // 錯誤處理
