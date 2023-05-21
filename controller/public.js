@@ -1,4 +1,6 @@
 const postgreSQL = require('../lib/postgreSQL');
+const jwt = require('jsonwebtoken');
+
 
 // 取得看板
 exports.getKanban = async (request,response) => {
@@ -21,6 +23,30 @@ exports.getArticle = async (request,response) => {
     sql += 'LIMIT 10 OFFSET $1'
     const result = await postgreSQL.client.query(sql, params);
     response.json(result.rows);
+}
+
+// 用戶登入
+exports.login = async (request,response) => {
+    if(request.cookies!=undefined){
+        console.log("TOKEN: " ,request.cookies.token);
+        jwt.verify(request.cookies.token, "test", (err, decoded) => {
+            if (err) {
+                console.log(err);
+            } else
+            console.log(decoded)
+        });
+    }
+
+    console.log('用戶登入：',request.body);
+    const token = jwt.sign(
+        { 
+            username: request.body.username 
+        }, 
+        "test"
+    );
+    // 將 JWT 儲存在 Cookie
+    response.cookie('token', token, { httpOnly: false });
+    response.json({ isSuccess: true });
 }
 
 // 錯誤處理

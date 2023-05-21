@@ -4,7 +4,7 @@ const app		= express();
 const createError	= require('http-errors');
 const logger		= require('morgan');
 const cors			= require('cors');
-
+const cookieParser	= require('cookie-parser');
 // 載入環境變數
 require('dotenv').config();
 
@@ -12,21 +12,22 @@ require('dotenv').config();
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 // 設置允許跨域請求
-//console.log('CORS: ',process.env.ORIGIN)
+console.log('設置CORS: ',process.env.CORS_ORIGIN)
 app.use(cors({
-	origin: '*',
+	origin: process.env.CORS_ORIGIN,
 	credentials: true
 }));
 
 // 設置路由
 const publicRouter = require('./routes/public');
 app.use('/public', publicRouter);
-/*const userRouter = require('../routes/user');
+const userRouter = require('./routes/user');
 app.use('/user', userRouter);
-const adminRouter = require('../routes/admin');
-app.use('/admin', userRouter);*/
+const adminRouter = require('./routes/admin');
+app.use('/admin', adminRouter);
 
 async function startApp() {
 	// SQL連接
